@@ -41,6 +41,9 @@ typedef void (^MJRefreshComponentEndRefreshingCompletionBlock)(void);
     /** 记录scrollView刚开始的inset */
     UIEdgeInsets _scrollViewOriginalInset;
     /** 父控件 */
+//#warning 为何这里有个ScrollView，下面还有一个scrollView？
+// 答：因为ScrollView是readOnly的
+#warning 为何这里要用Weak，strong有什么问题么？
     __weak UIScrollView *_scrollView;
 }
 #pragma mark - 刷新回调

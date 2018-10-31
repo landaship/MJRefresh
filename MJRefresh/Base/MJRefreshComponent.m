@@ -72,6 +72,7 @@
     }
 }
 
+// 调用时机：Controller->loadView, Controller->viewDidLoad 两方法之后
 - (void)drawRect:(CGRect)rect
 {
     [super drawRect:rect];
@@ -85,10 +86,28 @@
 #pragma mark - KVO监听
 - (void)addObservers
 {
+    /*
+    NSKeyValueObservingOptions详解
+    https://www.jianshu.com/p/3bdc82e0ed4e
+    
+    NSKeyValueObservingOptionNew：提供更改前的值
+    NSKeyValueObservingOptionOld：提供更改后的值
+    NSKeyValueObservingOptionInitial：观察最初的值（在注册观察服务时会调用一次触发方法）
+    NSKeyValueObservingOptionPrior：分别在值修改前后触发方法（即一次修改有两次触发）
+    */
     NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;
+    
+    //keyPath就是要观察的属性值
+    //options给你观察键值变化的选择
+    //context方便传输你需要的数据
+    //http://www.cnblogs.com/zy1987/p/4616764.html
     [self.scrollView addObserver:self forKeyPath:MJRefreshKeyPathContentOffset options:options context:nil];
     [self.scrollView addObserver:self forKeyPath:MJRefreshKeyPathContentSize options:options context:nil];
+    
+    // 原来ScrollView本身就有Pan手势
     self.pan = self.scrollView.panGestureRecognizer;
+    
+    // KVO 类似通知，KVC类似直接set和get属性
     [self.pan addObserver:self forKeyPath:MJRefreshKeyPathPanState options:options context:nil];
 }
 
@@ -100,6 +119,13 @@
     self.pan = nil;
 }
 
+/***
+ change{
+ kind = 1;
+ new = "NSPoint: {0, 0}";
+ old = "NSPoint: {0, 0}";
+ }
+ **/
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     // 遇到这些情况就直接返回
