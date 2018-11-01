@@ -48,6 +48,8 @@
     self.mj_y = - self.mj_h - self.ignoredScrollViewContentInsetTop;
 }
 
+
+// #warning 核心方法
 - (void)scrollViewContentOffsetDidChange:(NSDictionary *)change
 {
     [super scrollViewContentOffsetDidChange:change];
@@ -71,8 +73,11 @@
     
     // 当前的contentOffset
     CGFloat offsetY = self.scrollView.mj_offsetY;
-    // 头部控件刚好出现的offsetY
+    // 头部控件刚好出现的offsetY,这是一个诡异的值，不知道为何刚好是-70的时候就出现了下拉刷新的图，按道理是0的时候才对呢,
+    // 答：只有iOS11 是这样，因为安全区域的问题，这个inset MJ返回的是adjustedContentInset
     CGFloat happenOffsetY = - self.scrollViewOriginalInset.top;
+    
+    NSLog(@"++++++++++++++%f,%f",happenOffsetY,offsetY);
     
     // 如果是向上滚动到看不见头部控件，直接返回
     // >= -> >
@@ -84,18 +89,22 @@
     
     if (self.scrollView.isDragging) { // 如果正在拖拽
         self.pullingPercent = pullingPercent;
-        if (self.state == MJRefreshStateIdle && offsetY < normal2pullingOffsetY) {
+        if (self.state == MJRefreshStateIdle && offsetY < 50) {
             // 转为即将刷新状态
-            self.state = MJRefreshStatePulling;
+            self.state = MJRefreshStateRefreshing;
+            NSLog(@"++++++++++++++isDragging  MJRefreshStatePulling");
         } else if (self.state == MJRefreshStatePulling && offsetY >= normal2pullingOffsetY) {
             // 转为普通状态
             self.state = MJRefreshStateIdle;
+            NSLog(@"++++++++++++++isDragging MJRefreshStateIdle");
         }
     } else if (self.state == MJRefreshStatePulling) {// 即将刷新 && 手松开
         // 开始刷新
         [self beginRefreshing];
+        NSLog(@"++++++++++++++MJRefreshStatePulling MJRefreshStateRefreshing");
     } else if (pullingPercent < 1) {
         self.pullingPercent = pullingPercent;
+        NSLog(@"++++++++++++++pullingPercent");
     }
 }
 
